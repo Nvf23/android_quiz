@@ -86,4 +86,12 @@
         android:layout_height="wrap_content"
         android:text="@string/next_button" />
 
+    <TextView
+        android:id="@+id/results_text_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="24dp"
+        android:text=""
+        android:visibility="gone" />
+
 </LinearLayout>

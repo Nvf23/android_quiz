@@ -1,6 +1,7 @@
 package com.example.quizactivity;
 
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -11,6 +12,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 public class QuizActivity extends AppCompatActivity {
     private TextView mQuestionTextView;
+    private TextView mResultsTextView;  // TextView para mostrar los resultados
     private final Question[] mQuestionBank = new Question[]{
             new Question(R.string.question_australia, true),
             new Question(R.string.question_oceans, true),
@@ -26,6 +28,8 @@ public class QuizActivity extends AppCompatActivity {
 
     private Button mTrueButton;
     private Button mFalseButton;
+    private int mCorrectAnswers = 0;
+    private int mIncorrectAnswers = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,6 +37,7 @@ public class QuizActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         mQuestionTextView = findViewById(R.id.question_text_view);
+        mResultsTextView = findViewById(R.id.results_text_view);  // Inicializamos el TextView de resultados
 
         mPoints = new ImageView[]{
                 findViewById(R.id.point_1),
@@ -52,11 +57,19 @@ public class QuizActivity extends AppCompatActivity {
         if (savedInstanceState != null) {
             mCurrentIndex = savedInstanceState.getInt("currentIndex");
             mAnswersGiven = savedInstanceState.getBooleanArray("answersGiven");
+            mCorrectAnswers = savedInstanceState.getInt("correctAnswers");
+            mIncorrectAnswers = savedInstanceState.getInt("incorrectAnswers");
+            String resultsText = savedInstanceState.getString("resultsText");
 
             updatePoints();
 
             if (mAnswersGiven[mCurrentIndex]) {
                 disableAnswerButtons();
+            }
+
+            if (resultsText != null) {
+                mResultsTextView.setText(resultsText);
+                mResultsTextView.setVisibility(View.VISIBLE);  // Asegúrate de que el TextView sea visible
             }
         }
 
@@ -78,6 +91,7 @@ public class QuizActivity extends AppCompatActivity {
                     enableAnswerButtons();
                 }
             } else {
+                showResults();
                 mNextButton.setEnabled(false);
             }
         });
@@ -90,6 +104,9 @@ public class QuizActivity extends AppCompatActivity {
         super.onSaveInstanceState(outState);
         outState.putInt("currentIndex", mCurrentIndex);
         outState.putBooleanArray("answersGiven", mAnswersGiven);
+        outState.putInt("correctAnswers", mCorrectAnswers);
+        outState.putInt("incorrectAnswers", mIncorrectAnswers);
+        outState.putString("resultsText", mResultsTextView.getText().toString()); // Guardar el texto de resultados
     }
 
     private void updateQuestion() {
@@ -104,9 +121,11 @@ public class QuizActivity extends AppCompatActivity {
         if (userPressedTrue == answerIsTrue) {
             messageResId = R.string.correct_toast;
             mPoints[mCurrentIndex].setBackgroundResource(R.drawable.circle_correct);
+            mCorrectAnswers++;
         } else {
             messageResId = R.string.incorrect_toast;
             mPoints[mCurrentIndex].setBackgroundResource(R.drawable.circle_incorrect);
+            mIncorrectAnswers++;
         }
 
         mAnswersGiven[mCurrentIndex] = true;
@@ -133,5 +152,14 @@ public class QuizActivity extends AppCompatActivity {
                 }
             }
         }
+    }
+
+    private void showResults() {
+        int totalQuestions = mQuestionBank.length;
+        int correctPercentage = (mCorrectAnswers * 100) / totalQuestions;
+        String resultMessage = getString(R.string.results_message, mCorrectAnswers, mIncorrectAnswers, correctPercentage);
+
+        mResultsTextView.setText(resultMessage);
+        mResultsTextView.setVisibility(View.VISIBLE);  // Hacemos visible el TextView de resultados
     }
 }
